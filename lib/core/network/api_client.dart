@@ -5,18 +5,19 @@ import '../storage/secure_storage_service.dart';
 
 class ApiClient {
   final SecureStorageService storageService;
+  Dio? _dio;
 
   ApiClient(this.storageService);
 
-  Dio createDio() {
+  Dio get dio => _dio ??= _createDio();
+
+  Dio _createDio() {
     final dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Accept': 'application/json'},
       ),
     );
 

@@ -8,16 +8,16 @@ void main() {
   runApp(const ProviderScope(child: SalamtakApp()));
 }
 
-class SalamtakApp extends StatelessWidget {
+class SalamtakApp extends ConsumerWidget {
   const SalamtakApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Salamtak Mobile',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      routerConfig: AppRouter.router,
+      routerConfig: ref.watch(appRouterProvider),
     );
   }
 }
