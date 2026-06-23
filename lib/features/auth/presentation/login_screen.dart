@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final String? message;
+
+  const LoginScreen({super.key, this.message});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -15,6 +17,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.message != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(widget.message!)));
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -142,6 +159,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               )
                             : const Text('Login'),
                       ),
+                    ),
+                    TextButton(
+                      onPressed: authState.isLoading
+                          ? null
+                          : () => context.go('/register'),
+                      child: const Text('Create account'),
                     ),
                   ],
                 ),

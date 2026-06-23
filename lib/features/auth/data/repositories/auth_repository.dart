@@ -3,8 +3,12 @@ import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
+import '../models/doctor_register_request.dart';
+import '../models/hospital_model.dart';
 import '../models/login_request.dart';
 import '../models/login_response.dart';
+import '../models/patient_register_request.dart';
+import '../models/register_response.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
@@ -28,6 +32,34 @@ class AuthRepository {
     await storageService.saveToken(loginResponse.accessToken);
 
     return loginResponse;
+  }
+
+  Future<RegisterResponse> registerPatient(
+    PatientRegisterRequest request,
+  ) async {
+    return _register(ApiConstants.registerPatient, request.toJson());
+  }
+
+  Future<RegisterResponse> registerDoctor(DoctorRegisterRequest request) async {
+    return _register(ApiConstants.registerDoctor, request.toJson());
+  }
+
+  Future<List<HospitalModel>> getHospitals() async {
+    final response = await apiClient.dio.get<dynamic>(ApiConstants.hospitals);
+    final data = response.data;
+    final list = data is List
+        ? data
+        : (_tryJsonMap(data)?['items'] ?? _tryJsonMap(data)?['data']);
+
+    if (list is! List) {
+      throw const FormatException('The server returned invalid hospital data.');
+    }
+
+    return list
+        .map(_tryJsonMap)
+        .whereType<Map<String, dynamic>>()
+        .map(HospitalModel.fromJson)
+        .toList();
   }
 
   Future<UserModel> getCurrentUser() async {
@@ -55,6 +87,22 @@ class AuthRepository {
 
   Future<void> logout() async {
     await storageService.clearToken();
+  }
+
+  Future<RegisterResponse> _register(
+    String path,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await apiClient.dio.post<dynamic>(path, data: data);
+    final registerResponse = RegisterResponse.fromJson(
+      _asJsonMap(response.data),
+    );
+
+    if (registerResponse.hasToken) {
+      await storageService.saveToken(registerResponse.accessToken!);
+    }
+
+    return registerResponse;
   }
 
   Map<String, dynamic> _asJsonMap(dynamic value) {
