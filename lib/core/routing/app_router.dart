@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,7 +9,12 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/register_role_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/doctor/presentation/doctor_home_screen.dart';
+import '../../features/patient/presentation/patient_doctors_screen.dart';
 import '../../features/patient/presentation/patient_home_screen.dart';
+import '../../features/patient/presentation/patient_more_screen.dart';
+import '../../features/patient/presentation/patient_placeholder_screen.dart';
+import '../../features/patient/presentation/patient_profile_screen.dart';
+import '../../features/patient/presentation/patient_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RouterRefreshNotifier();
@@ -48,13 +53,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return isAuthEntryRoute ? null : '/login';
       }
 
-      final homeRoute = authState.role == 'doctor' ? '/doctor' : '/patient';
-
-      if (isPublicRoute || location != homeRoute) {
-        return homeRoute;
+      if (authState.role == 'doctor') {
+        return location == '/doctor' ? null : '/doctor';
       }
 
-      return null;
+      if (authState.role == 'patient') {
+        return location.startsWith('/patient') ? null : '/patient';
+      }
+
+      return '/login';
     },
     routes: [
       GoRoute(
@@ -78,9 +85,65 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/register/doctor',
         builder: (context, state) => const DoctorRegisterScreen(),
       ),
-      GoRoute(
-        path: '/patient',
-        builder: (context, state) => const PatientHomeScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            PatientShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient',
+                builder: (context, state) => const PatientHomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/appointments',
+                builder: (context, state) => const PatientPlaceholderScreen(
+                  title: 'Appointments',
+                  message:
+                      'Appointment booking and management are planned for the next patient sprint.',
+                  icon: Icons.calendar_month_outlined,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/doctors',
+                builder: (context, state) => const PatientDoctorsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/records',
+                builder: (context, state) => const PatientPlaceholderScreen(
+                  title: 'Records',
+                  message:
+                      'Health record browsing is planned for the next patient sprint.',
+                  icon: Icons.folder_outlined,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/patient/more',
+                builder: (context, state) => const PatientMoreScreen(),
+              ),
+              GoRoute(
+                path: '/patient/profile',
+                builder: (context, state) => const PatientProfileScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/doctor',
