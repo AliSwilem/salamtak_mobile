@@ -26,6 +26,66 @@ class PatientMoreScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1),
                 ListTile(
+                  leading: const Icon(Icons.notifications_none),
+                  title: const Text('Notifications'),
+                  subtitle: const Text('Read care and appointment updates'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/patient/notifications'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.science_outlined),
+                  title: const Text('Test Results'),
+                  subtitle: const Text('Lab, imaging, and document results'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/patient/test-results'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.smart_toy_outlined),
+                  title: const Text('AI Assistant'),
+                  subtitle: const Text('Personal health assistant'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/patient/coming-soon/assistant'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.document_scanner_outlined),
+                  title: const Text('OCR'),
+                  subtitle: const Text('Medical document extraction'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/patient/coming-soon/ocr'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.biotech_outlined),
+                  title: const Text('Kidney Stone Analysis'),
+                  subtitle: const Text('AI image analysis placeholder'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/patient/coming-soon/kidney-stone'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.analytics_outlined),
+                  title: const Text('Disease Prediction'),
+                  subtitle: const Text('Predictive models placeholder'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/patient/coming-soon/prediction'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
                   leading: Icon(
                     Icons.logout,
                     color: Theme.of(context).colorScheme.error,

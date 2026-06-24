@@ -6,7 +6,9 @@ import '../models/patient_dashboard_model.dart';
 import '../models/patient_doctor_model.dart';
 import '../models/patient_doctor_profile_model.dart';
 import '../models/patient_hospital_model.dart';
+import '../models/patient_notification_model.dart';
 import '../models/patient_profile_model.dart';
+import '../models/patient_records_model.dart';
 
 class PatientRepository {
   final ApiClient apiClient;
@@ -178,6 +180,57 @@ class PatientRepository {
       data: request.toJson(),
     );
     return PatientDoctorReviewModel.fromJson(_map(response.data));
+  }
+
+  Future<PatientRecordsBundle> getHealthRecords() async {
+    final results = await Future.wait<dynamic>([
+      apiClient.dio.get<dynamic>(ApiConstants.patientDiagnoses),
+      apiClient.dio.get<dynamic>(ApiConstants.patientTreatments),
+      apiClient.dio.get<dynamic>(ApiConstants.patientMedications),
+      apiClient.dio.get<dynamic>(ApiConstants.patientEhrs),
+    ]);
+    return PatientRecordsBundle(
+      diagnoses: _list(
+        results[0].data,
+      ).map(PatientDiagnosisModel.fromJson).toList(),
+      treatments: _list(
+        results[1].data,
+      ).map(PatientTreatmentModel.fromJson).toList(),
+      medications: _list(
+        results[2].data,
+      ).map(PatientMedicationModel.fromJson).toList(),
+      documents: _list(
+        results[3].data,
+      ).map(PatientDocumentModel.fromJson).toList(),
+    );
+  }
+
+  Future<List<PatientDocumentModel>> getTestResults() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.patientTestResults,
+    );
+    return _list(response.data).map(PatientDocumentModel.fromJson).toList();
+  }
+
+  Future<List<PatientFullNotificationModel>> getNotifications() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.patientNotifications,
+    );
+    return _list(
+      response.data,
+    ).map(PatientFullNotificationModel.fromJson).toList();
+  }
+
+  Future<void> markNotificationRead(int notificationId) async {
+    await apiClient.dio.put<dynamic>(
+      ApiConstants.markPatientNotificationRead(notificationId),
+    );
+  }
+
+  Future<void> deleteNotification(int notificationId) async {
+    await apiClient.dio.delete<dynamic>(
+      ApiConstants.patientNotification(notificationId),
+    );
   }
 
   Map<String, dynamic> _map(dynamic value) {

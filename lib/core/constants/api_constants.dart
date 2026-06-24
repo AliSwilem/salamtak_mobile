@@ -37,4 +37,20 @@ class ApiConstants {
 
   static String doctorAvailability(int doctorId) =>
       '/patients/doctors/$doctorId/availability';
+
+  static const String patientDiagnoses = '/patients/me/diagnoses';
+  static const String patientTreatments = '/patients/me/treatments';
+  static const String patientMedications = '/patients/me/medications';
+  static const String patientEhrs = '/patients/me/ehrs';
+  static const String patientTestResults = '/patients/me/test-results';
+  static const String patientNotifications = '/patients/me/notifications';
+
+  static String patientTestResultDownload(int ehrId) =>
+      '/patients/me/test-results/$ehrId/download';
+
+  static String markPatientNotificationRead(int notificationId) =>
+      '/patients/me/notifications/$notificationId/read';
+
+  static String patientNotification(int notificationId) =>
+      '/patients/me/notifications/$notificationId';
 }
