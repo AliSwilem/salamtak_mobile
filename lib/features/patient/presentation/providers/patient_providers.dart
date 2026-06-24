@@ -7,7 +7,9 @@ import '../../data/models/patient_dashboard_model.dart';
 import '../../data/models/patient_doctor_model.dart';
 import '../../data/models/patient_doctor_profile_model.dart';
 import '../../data/models/patient_hospital_model.dart';
+import '../../data/models/patient_notification_model.dart';
 import '../../data/models/patient_profile_model.dart';
+import '../../data/models/patient_records_model.dart';
 import '../../data/repositories/patient_repository.dart';
 
 final patientRepositoryProvider = Provider<PatientRepository>((ref) {
@@ -195,5 +197,66 @@ class AppointmentActionController extends AsyncNotifier<void> {
     ref.invalidate(patientHomeProvider);
     ref.invalidate(upcomingAppointmentsProvider);
     ref.invalidate(pastAppointmentsProvider);
+  }
+}
+
+final patientRecordsProvider = FutureProvider<PatientRecordsBundle>((ref) {
+  return ref.watch(patientRepositoryProvider).getHealthRecords();
+});
+
+final patientTestResultsProvider = FutureProvider<List<PatientDocumentModel>>((
+  ref,
+) {
+  return ref.watch(patientRepositoryProvider).getTestResults();
+});
+
+final patientNotificationsProvider =
+    FutureProvider<List<PatientFullNotificationModel>>((ref) {
+      return ref.watch(patientRepositoryProvider).getNotifications();
+    });
+
+final patientUnreadNotificationsProvider = Provider<int>((ref) {
+  final notifications = ref.watch(patientNotificationsProvider);
+  return notifications.maybeWhen(
+    data: (items) => items.where((item) => !item.isRead).length,
+    orElse: () => 0,
+  );
+});
+
+final notificationActionProvider =
+    AsyncNotifierProvider<NotificationActionController, void>(
+      NotificationActionController.new,
+    );
+
+class NotificationActionController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<bool> markRead(int notificationId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref
+          .read(patientRepositoryProvider)
+          .markNotificationRead(notificationId),
+    );
+    if (!state.hasError) {
+      ref.invalidate(patientNotificationsProvider);
+      ref.invalidate(patientHomeProvider);
+    }
+    return !state.hasError;
+  }
+
+  Future<bool> delete(int notificationId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref
+          .read(patientRepositoryProvider)
+          .deleteNotification(notificationId),
+    );
+    if (!state.hasError) {
+      ref.invalidate(patientNotificationsProvider);
+      ref.invalidate(patientHomeProvider);
+    }
+    return !state.hasError;
   }
 }

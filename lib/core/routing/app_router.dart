@@ -13,12 +13,16 @@ import '../../features/patient/presentation/appointment_details_screen.dart';
 import '../../features/patient/presentation/book_appointment_screen.dart';
 import '../../features/patient/presentation/doctor_profile_screen.dart';
 import '../../features/patient/presentation/patient_appointments_screen.dart';
+import '../../features/patient/presentation/patient_coming_soon_screen.dart';
 import '../../features/patient/presentation/patient_doctors_screen.dart';
 import '../../features/patient/presentation/patient_home_screen.dart';
 import '../../features/patient/presentation/patient_more_screen.dart';
+import '../../features/patient/presentation/patient_notifications_screen.dart';
 import '../../features/patient/presentation/patient_placeholder_screen.dart';
 import '../../features/patient/presentation/patient_profile_screen.dart';
+import '../../features/patient/presentation/patient_records_screen.dart';
 import '../../features/patient/presentation/patient_shell.dart';
+import '../../features/patient/presentation/patient_test_results_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RouterRefreshNotifier();
@@ -157,12 +161,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/patient/records',
-                builder: (context, state) => const PatientPlaceholderScreen(
-                  title: 'Records',
-                  message:
-                      'Health record browsing is planned for the next patient sprint.',
-                  icon: Icons.folder_outlined,
-                ),
+                builder: (context, state) => const PatientRecordsScreen(),
+              ),
+              GoRoute(
+                path: '/patient/test-results',
+                builder: (context, state) => const PatientTestResultsScreen(),
               ),
             ],
           ),
@@ -175,6 +178,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/patient/profile',
                 builder: (context, state) => const PatientProfileScreen(),
+              ),
+              GoRoute(
+                path: '/patient/notifications',
+                builder: (context, state) => const PatientNotificationsScreen(),
+              ),
+              GoRoute(
+                path: '/patient/coming-soon/:feature',
+                builder: (context, state) {
+                  final feature = state.pathParameters['feature'] ?? '';
+                  final config = _comingSoonConfig(feature);
+                  return PatientComingSoonScreen(
+                    title: config.title,
+                    message: config.message,
+                    icon: config.icon,
+                  );
+                },
               ),
             ],
           ),
@@ -193,4 +212,45 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   void refresh() => notifyListeners();
+}
+
+({String title, String message, IconData icon}) _comingSoonConfig(
+  String feature,
+) {
+  switch (feature) {
+    case 'assistant':
+      return (
+        title: 'AI Assistant',
+        message:
+            'The AI assistant experience is planned for a future sprint and does not call the backend yet.',
+        icon: Icons.smart_toy_outlined,
+      );
+    case 'ocr':
+      return (
+        title: 'OCR',
+        message:
+            'Medical document OCR will be added later. No files are uploaded from this placeholder.',
+        icon: Icons.document_scanner_outlined,
+      );
+    case 'kidney-stone':
+      return (
+        title: 'Kidney Stone Analysis',
+        message:
+            'Kidney stone image analysis is coming soon and is intentionally disabled for now.',
+        icon: Icons.biotech_outlined,
+      );
+    case 'prediction':
+      return (
+        title: 'Disease Prediction',
+        message:
+            'Disease prediction models are planned for a later sprint and are not connected yet.',
+        icon: Icons.analytics_outlined,
+      );
+    default:
+      return (
+        title: 'Coming Soon',
+        message: 'This patient feature is planned for a future sprint.',
+        icon: Icons.hourglass_empty,
+      );
+  }
 }
