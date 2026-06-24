@@ -105,7 +105,7 @@ class _HomeBody extends StatelessWidget {
             _QuickAction(
               icon: Icons.add_circle_outline,
               label: 'Book Appointment',
-              onTap: () => context.go('/patient/appointments'),
+              onTap: () => context.go('/patient/book'),
             ),
             _QuickAction(
               icon: Icons.medical_services_outlined,
@@ -172,6 +172,7 @@ class _AppointmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
+        onTap: () => context.push('/patient/appointments/${appointment.id}'),
         leading: const CircleAvatar(child: Icon(Icons.event_available)),
         title: Text(
           appointment.doctorName.isEmpty
