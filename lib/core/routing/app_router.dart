@@ -9,6 +9,10 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/register_role_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/doctor/presentation/doctor_home_screen.dart';
+import '../../features/patient/presentation/appointment_details_screen.dart';
+import '../../features/patient/presentation/book_appointment_screen.dart';
+import '../../features/patient/presentation/doctor_profile_screen.dart';
+import '../../features/patient/presentation/patient_appointments_screen.dart';
 import '../../features/patient/presentation/patient_doctors_screen.dart';
 import '../../features/patient/presentation/patient_home_screen.dart';
 import '../../features/patient/presentation/patient_more_screen.dart';
@@ -101,12 +105,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/patient/appointments',
-                builder: (context, state) => const PatientPlaceholderScreen(
-                  title: 'Appointments',
-                  message:
-                      'Appointment booking and management are planned for the next patient sprint.',
-                  icon: Icons.calendar_month_outlined,
-                ),
+                builder: (context, state) => const PatientAppointmentsScreen(),
+              ),
+              GoRoute(
+                path: '/patient/book',
+                builder: (context, state) => const BookAppointmentScreen(),
+              ),
+              GoRoute(
+                path: '/patient/appointments/:appointmentId',
+                builder: (context, state) {
+                  final appointmentId = int.tryParse(
+                    state.pathParameters['appointmentId'] ?? '',
+                  );
+                  if (appointmentId == null) {
+                    return const PatientPlaceholderScreen(
+                      title: 'Appointment not found',
+                      message: 'The appointment id is invalid.',
+                      icon: Icons.error_outline,
+                    );
+                  }
+                  return AppointmentDetailsScreen(appointmentId: appointmentId);
+                },
               ),
             ],
           ),
@@ -115,6 +134,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/patient/doctors',
                 builder: (context, state) => const PatientDoctorsScreen(),
+              ),
+              GoRoute(
+                path: '/patient/doctors/:doctorId',
+                builder: (context, state) {
+                  final doctorId = int.tryParse(
+                    state.pathParameters['doctorId'] ?? '',
+                  );
+                  if (doctorId == null) {
+                    return const PatientPlaceholderScreen(
+                      title: 'Doctor not found',
+                      message: 'The doctor id is invalid.',
+                      icon: Icons.error_outline,
+                    );
+                  }
+                  return DoctorProfileScreen(doctorId: doctorId);
+                },
               ),
             ],
           ),

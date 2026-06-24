@@ -1,7 +1,10 @@
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_client.dart';
+import '../models/patient_appointment_model.dart';
+import '../models/patient_availability_slot_model.dart';
 import '../models/patient_dashboard_model.dart';
 import '../models/patient_doctor_model.dart';
+import '../models/patient_doctor_profile_model.dart';
 import '../models/patient_hospital_model.dart';
 import '../models/patient_profile_model.dart';
 
@@ -60,6 +63,121 @@ class PatientRepository {
       },
     );
     return _list(response.data).map(PatientDoctorModel.fromJson).toList();
+  }
+
+  Future<List<PatientAppointmentModel>> getUpcomingAppointments() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.patientUpcomingAppointments,
+    );
+    return _list(response.data).map(PatientAppointmentModel.fromJson).toList();
+  }
+
+  Future<List<PatientAppointmentModel>> getPastAppointments() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.patientPastAppointments,
+    );
+    return _list(response.data).map(PatientAppointmentModel.fromJson).toList();
+  }
+
+  Future<PatientAppointmentModel> getAppointment(int appointmentId) async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.patientAppointment(appointmentId),
+    );
+    return PatientAppointmentModel.fromJson(_map(response.data));
+  }
+
+  Future<PatientAppointmentModel> bookAppointment(
+    BookAppointmentRequest request,
+  ) async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.patientAppointments,
+      data: request.toJson(),
+    );
+    return PatientAppointmentModel.fromJson(_map(response.data));
+  }
+
+  Future<PatientAppointmentModel> cancelAppointment({
+    required int appointmentId,
+    required String reason,
+  }) async {
+    final response = await apiClient.dio.put<dynamic>(
+      ApiConstants.cancelPatientAppointment(appointmentId),
+      data: {
+        'reason': reason.trim().isEmpty
+            ? 'Cancelled by patient'
+            : reason.trim(),
+      },
+    );
+    return PatientAppointmentModel.fromJson(_map(response.data));
+  }
+
+  Future<PatientAppointmentModel> rescheduleAppointment({
+    required int appointmentId,
+    required AppointmentRescheduleRequest request,
+  }) async {
+    final response = await apiClient.dio.put<dynamic>(
+      ApiConstants.reschedulePatientAppointment(appointmentId),
+      data: request.toJson(),
+    );
+    return PatientAppointmentModel.fromJson(_map(response.data));
+  }
+
+  Future<List<PatientAvailabilitySlotModel>> getDoctorAvailability({
+    required int doctorId,
+    required String date,
+  }) async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorAvailability(doctorId),
+      queryParameters: {'date': date},
+    );
+    return _list(response.data)
+        .map(PatientAvailabilitySlotModel.fromJson)
+        .where((slot) => slot.time.isNotEmpty)
+        .toList();
+  }
+
+  Future<PatientDoctorProfileModel> getDoctorProfile(int doctorId) async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorProfile(doctorId),
+    );
+    final profile = PatientDoctorProfileModel.fromJson(_map(response.data));
+    if (profile.recentReviews.isNotEmpty) return profile;
+
+    final reviews = await getDoctorReviews(doctorId);
+    return PatientDoctorProfileModel(
+      id: profile.id,
+      fullName: profile.fullName,
+      specialization: profile.specialization,
+      email: profile.email,
+      phone: profile.phone,
+      yearsOfExperience: profile.yearsOfExperience,
+      photoUrl: profile.photoUrl,
+      bio: profile.bio,
+      achievements: profile.achievements,
+      languages: profile.languages,
+      clinicName: profile.clinicName,
+      averageRating: profile.averageRating,
+      reviewsCount: profile.reviewsCount,
+      recentReviews: reviews,
+    );
+  }
+
+  Future<List<PatientDoctorReviewModel>> getDoctorReviews(int doctorId) async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorReviews(doctorId),
+    );
+    return _list(response.data).map(PatientDoctorReviewModel.fromJson).toList();
+  }
+
+  Future<PatientDoctorReviewModel> submitDoctorReview({
+    required int appointmentId,
+    required DoctorReviewRequest request,
+  }) async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.patientAppointmentReview(appointmentId),
+      data: request.toJson(),
+    );
+    return PatientDoctorReviewModel.fromJson(_map(response.data));
   }
 
   Map<String, dynamic> _map(dynamic value) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data/models/patient_doctor_model.dart';
 import 'providers/patient_providers.dart';
@@ -187,13 +188,7 @@ class _DoctorCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Doctor details are planned for Sprint 2.'),
-            ),
-          );
-        },
+        onTap: () => context.push('/patient/doctors/${doctor.id}'),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(

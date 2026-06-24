@@ -11,4 +11,30 @@ class ApiConstants {
       '/patients/me/health-records/stats';
   static const String patientProfile = '/patients/me/profile';
   static const String patientDoctorSearch = '/patients/doctors/search';
+  static const String patientUpcomingAppointments =
+      '/patients/me/appointments/upcoming';
+  static const String patientPastAppointments =
+      '/patients/me/appointments/past';
+  static const String patientAppointments = '/patients/me/appointments';
+
+  static String patientAppointment(int appointmentId) =>
+      '/patients/me/appointments/$appointmentId';
+
+  static String cancelPatientAppointment(int appointmentId) =>
+      '/patients/me/appointments/$appointmentId/cancel';
+
+  static String reschedulePatientAppointment(int appointmentId) =>
+      '/patients/me/appointments/$appointmentId/reschedule';
+
+  static String patientAppointmentReview(int appointmentId) =>
+      '/patients/me/appointments/$appointmentId/review';
+
+  static String doctorProfile(int doctorId) =>
+      '/patients/doctors/$doctorId/profile';
+
+  static String doctorReviews(int doctorId) =>
+      '/patients/doctors/$doctorId/reviews';
+
+  static String doctorAvailability(int doctorId) =>
+      '/patients/doctors/$doctorId/availability';
 }
