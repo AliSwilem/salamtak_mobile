@@ -53,4 +53,9 @@ class ApiConstants {
 
   static String patientNotification(int notificationId) =>
       '/patients/me/notifications/$notificationId';
+
+  static const String doctorDashboard = '/doctors/me/dashboard';
+  static const String doctorStats = '/doctors/me/stats';
+  static const String doctorTodaySummary = '/doctors/me/today-summary';
+  static const String doctorActivityLog = '/doctors/me/activity-log';
 }

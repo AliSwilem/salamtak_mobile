@@ -9,6 +9,9 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/register_role_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/doctor/presentation/doctor_home_screen.dart';
+import '../../features/doctor/presentation/doctor_more_screen.dart';
+import '../../features/doctor/presentation/doctor_placeholder_screen.dart';
+import '../../features/doctor/presentation/doctor_shell.dart';
 import '../../features/patient/presentation/appointment_details_screen.dart';
 import '../../features/patient/presentation/book_appointment_screen.dart';
 import '../../features/patient/presentation/doctor_profile_screen.dart';
@@ -62,7 +65,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (authState.role == 'doctor') {
-        return location == '/doctor' ? null : '/doctor';
+        return location.startsWith('/doctor') ? null : '/doctor';
       }
 
       if (authState.role == 'patient') {
@@ -199,9 +202,75 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      GoRoute(
-        path: '/doctor',
-        builder: (context, state) => const DoctorHomeScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            DoctorShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor',
+                builder: (context, state) => const DoctorHomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/appointments',
+                builder: (context, state) => const DoctorPlaceholderScreen(
+                  title: 'Appointments',
+                  message:
+                      'Doctor appointment management will be implemented in a later sprint.',
+                  icon: Icons.calendar_month_outlined,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/patients',
+                builder: (context, state) => const DoctorPlaceholderScreen(
+                  title: 'Patients',
+                  message:
+                      'Doctor patient management will be implemented in a later sprint.',
+                  icon: Icons.groups_outlined,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/availability',
+                builder: (context, state) => const DoctorPlaceholderScreen(
+                  title: 'Availability',
+                  message:
+                      'Doctor availability management will be implemented in a later sprint.',
+                  icon: Icons.schedule_outlined,
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/doctor/more',
+                builder: (context, state) => const DoctorMoreScreen(),
+              ),
+              GoRoute(
+                path: '/doctor/profile',
+                builder: (context, state) => const DoctorPlaceholderScreen(
+                  title: 'Profile',
+                  message:
+                      'Doctor profile editing will be implemented in a later sprint.',
+                  icon: Icons.person_outline,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
