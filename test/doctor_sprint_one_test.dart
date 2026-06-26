@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_appointment_model.dart';
+import 'package:salamtak_mobile/features/doctor/data/models/doctor_availability_model.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_dashboard_model.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_patient_model.dart';
 
@@ -106,5 +107,35 @@ void main() {
     expect(stats.activeTreatments, 1);
     expect(history.diagnoses.single.notes, 'Stable');
     expect(history.treatments.single.result, 'Improved');
+  });
+
+  test('doctor availability models parse and serialize backend contract', () {
+    final availability = DoctorAvailabilityModel.fromJson({
+      'doctor_id': '2',
+      'slots': [
+        {'day_of_week': 1, 'start_time': '09:00', 'end_time': '17:30:00'},
+      ],
+    });
+    final stats = DoctorAvailabilityStatsModel.fromJson({
+      'DoctorID': 2,
+      'Entries': '1',
+    });
+    final sync = DoctorAvailabilitySyncResult.fromJson({
+      'synced': false,
+      'mode': 'demo-disabled',
+      'message': 'Not connected',
+    });
+
+    expect(availability.doctorId, 2);
+    expect(availability.slots.single.startTime, '09:00:00');
+    expect(availability.slots.single.displayEndTime, '17:30');
+    expect(availability.slots.single.toJson(), {
+      'day_of_week': 1,
+      'start_time': '09:00:00',
+      'end_time': '17:30:00',
+    });
+    expect(stats.entries, 1);
+    expect(sync.synced, isFalse);
+    expect(sync.message, 'Not connected');
   });
 }

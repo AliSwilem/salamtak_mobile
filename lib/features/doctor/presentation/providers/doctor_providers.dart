@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/doctor_appointment_model.dart';
+import '../../data/models/doctor_availability_model.dart';
 import '../../data/models/doctor_dashboard_model.dart';
 import '../../data/models/doctor_patient_model.dart';
 import '../../data/repositories/doctor_repository.dart';
@@ -183,3 +184,67 @@ final doctorPatientFileProvider =
         history: results[3] as DoctorConsultationHistoryModel,
       );
     });
+
+class DoctorAvailabilityData {
+  final DoctorAvailabilityModel availability;
+  final DoctorAvailabilityStatsModel stats;
+
+  const DoctorAvailabilityData({
+    required this.availability,
+    required this.stats,
+  });
+}
+
+final doctorAvailabilityProvider = FutureProvider<DoctorAvailabilityData>((
+  ref,
+) async {
+  final repository = ref.watch(doctorRepositoryProvider);
+  final results = await Future.wait<dynamic>([
+    repository.getAvailability(),
+    repository.getAvailabilityStats(),
+  ]);
+  return DoctorAvailabilityData(
+    availability: results[0] as DoctorAvailabilityModel,
+    stats: results[1] as DoctorAvailabilityStatsModel,
+  );
+});
+
+final doctorAvailabilityActionProvider =
+    AsyncNotifierProvider<DoctorAvailabilityActionController, void>(
+      DoctorAvailabilityActionController.new,
+    );
+
+class DoctorAvailabilityActionController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<DoctorAvailabilityModel?> save(
+    List<DoctorAvailabilitySlotModel> slots,
+  ) async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).updateAvailability(slots),
+    );
+    state = result.whenData((_) {});
+    if (!result.hasError) ref.invalidate(doctorAvailabilityProvider);
+    return result.hasValue ? result.value : null;
+  }
+
+  Future<bool> deleteDay(int day) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).deleteAvailabilityDay(day),
+    );
+    if (!state.hasError) ref.invalidate(doctorAvailabilityProvider);
+    return !state.hasError;
+  }
+
+  Future<DoctorAvailabilitySyncResult?> syncCalendar() async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).syncAvailabilityCalendar(),
+    );
+    state = result.whenData((_) {});
+    return result.hasValue ? result.value : null;
+  }
+}

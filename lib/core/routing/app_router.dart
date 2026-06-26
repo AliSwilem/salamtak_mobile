@@ -11,6 +11,7 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/doctor/data/models/doctor_appointment_model.dart';
 import '../../features/doctor/presentation/doctor_appointment_details_screen.dart';
 import '../../features/doctor/presentation/doctor_appointments_screen.dart';
+import '../../features/doctor/presentation/doctor_availability_screen.dart';
 import '../../features/doctor/presentation/doctor_home_screen.dart';
 import '../../features/doctor/presentation/doctor_more_screen.dart';
 import '../../features/doctor/presentation/doctor_patient_medical_file_screen.dart';
@@ -272,12 +273,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/doctor/availability',
-                builder: (context, state) => const DoctorPlaceholderScreen(
-                  title: 'Availability',
-                  message:
-                      'Doctor availability management will be implemented in a later sprint.',
-                  icon: Icons.schedule_outlined,
-                ),
+                builder: (context, state) => const DoctorAvailabilityScreen(),
               ),
             ],
           ),

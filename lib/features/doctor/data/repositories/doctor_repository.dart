@@ -1,6 +1,7 @@
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/doctor_appointment_model.dart';
+import '../models/doctor_availability_model.dart';
 import '../models/doctor_dashboard_model.dart';
 import '../models/doctor_patient_model.dart';
 
@@ -120,6 +121,43 @@ class DoctorRepository {
       ApiConstants.doctorConsultationHistory(patientId),
     );
     return DoctorConsultationHistoryModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorAvailabilityModel> getAvailability() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorOwnAvailability,
+    );
+    return DoctorAvailabilityModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorAvailabilityStatsModel> getAvailabilityStats() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorAvailabilityStats,
+    );
+    return DoctorAvailabilityStatsModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorAvailabilityModel> updateAvailability(
+    List<DoctorAvailabilitySlotModel> slots,
+  ) async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.doctorUpdateAvailability,
+      data: {'slots': slots.map((slot) => slot.toJson()).toList()},
+    );
+    return DoctorAvailabilityModel.fromJson(_map(response.data));
+  }
+
+  Future<void> deleteAvailabilityDay(int day) async {
+    await apiClient.dio.delete<dynamic>(
+      ApiConstants.doctorDeleteAvailabilityDay(day),
+    );
+  }
+
+  Future<DoctorAvailabilitySyncResult> syncAvailabilityCalendar() async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.doctorSyncAvailabilityCalendar,
+    );
+    return DoctorAvailabilitySyncResult.fromJson(_map(response.data));
   }
 
   Future<DoctorAppointmentModel> updateAppointmentStatus({

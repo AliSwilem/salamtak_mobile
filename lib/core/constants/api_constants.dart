@@ -83,4 +83,15 @@ class ApiConstants {
 
   static String doctorConsultationHistory(int patientId) =>
       '/doctors/consultations/history/$patientId';
+
+  static const String doctorOwnAvailability = '/doctors/me/availability';
+  static const String doctorAvailabilityStats =
+      '/doctors/me/availability/stats';
+  static const String doctorUpdateAvailability =
+      '/doctors/me/availability/update';
+  static const String doctorSyncAvailabilityCalendar =
+      '/doctors/me/availability/sync-calendar';
+
+  static String doctorDeleteAvailabilityDay(int day) =>
+      '/doctors/me/availability/delete-day/$day';
 }
