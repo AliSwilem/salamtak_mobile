@@ -18,9 +18,7 @@ class DoctorMoreScreen extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.person_outline),
               title: const Text('Profile'),
-              subtitle: const Text(
-                'Profile editing is planned for a later sprint.',
-              ),
+              subtitle: const Text('View and edit your public doctor profile.'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.go('/doctor/profile'),
             ),

@@ -2,8 +2,10 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/doctor_appointment_model.dart';
 import '../models/doctor_availability_model.dart';
+import '../models/doctor_consultation_model.dart';
 import '../models/doctor_dashboard_model.dart';
 import '../models/doctor_patient_model.dart';
+import '../models/doctor_profile_model.dart';
 
 class DoctorRepository {
   final ApiClient apiClient;
@@ -158,6 +160,90 @@ class DoctorRepository {
       ApiConstants.doctorSyncAvailabilityCalendar,
     );
     return DoctorAvailabilitySyncResult.fromJson(_map(response.data));
+  }
+
+  Future<List<DoctorMedicationModel>> getMedications() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorMedications,
+    );
+    return _list(response.data).map(DoctorMedicationModel.fromJson).toList();
+  }
+
+  Future<List<DoctorTreatmentTypeModel>> getTreatmentTypes() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorTreatmentTypes,
+    );
+    return _list(response.data).map(DoctorTreatmentTypeModel.fromJson).toList();
+  }
+
+  Future<DoctorDiagnosisModel> createDiagnosis(
+    DoctorDiagnosisCreateRequest request,
+  ) async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.doctorCreateDiagnosis,
+      data: request.toJson(),
+    );
+    return DoctorDiagnosisModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorTreatmentModel> createTreatment(
+    DoctorTreatmentCreateRequest request,
+  ) async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.doctorCreateTreatment,
+      data: request.toJson(),
+    );
+    return DoctorTreatmentModel.fromJson(_map(response.data));
+  }
+
+  Future<void> addTreatmentMedication(
+    DoctorTreatmentMedicationRequest request,
+  ) async {
+    await apiClient.dio.post<dynamic>(
+      ApiConstants.doctorAddTreatmentMedication,
+      data: request.toJson(),
+    );
+  }
+
+  Future<DoctorSummaryModel> createSummary(
+    DoctorSummaryCreateRequest request,
+  ) async {
+    final response = await apiClient.dio.post<dynamic>(
+      ApiConstants.doctorCreateSummary,
+      data: request.toJson(),
+    );
+    return DoctorSummaryModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorProfileModel> getProfile() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorProfileMe,
+    );
+    return DoctorProfileModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorProfileModel> updateProfile(
+    DoctorProfileUpdateRequest request,
+  ) async {
+    final response = await apiClient.dio.put<dynamic>(
+      ApiConstants.doctorProfileMe,
+      data: request.toJson(),
+    );
+    return DoctorProfileModel.fromJson(_map(response.data));
+  }
+
+  Future<DoctorProfileStatsModel> getProfileStats() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorProfileStats,
+    );
+    return DoctorProfileStatsModel.fromJson(_map(response.data));
+  }
+
+  Future<List<DoctorActivityModel>> getProfileActivity() async {
+    final response = await apiClient.dio.get<dynamic>(
+      ApiConstants.doctorProfileActivity,
+    );
+    return _list(response.data).map(DoctorActivityModel.fromJson).toList();
   }
 
   Future<DoctorAppointmentModel> updateAppointmentStatus({

@@ -51,6 +51,17 @@ class _DoctorAppointmentDetailsScreenState
             const SizedBox(height: 8),
           ],
           FilledButton.icon(
+            onPressed: _appointment.patientId <= 0
+                ? null
+                : () => context.push(
+                    '/doctor/consultation/${_appointment.id}',
+                    extra: _appointment,
+                  ),
+            icon: const Icon(Icons.medical_information_outlined),
+            label: const Text('Start / open consultation'),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
             onPressed: action.isLoading ? null : _showStatusSheet,
             icon: const Icon(Icons.edit_outlined),
             label: const Text('Update status'),

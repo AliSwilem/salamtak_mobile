@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/doctor_appointment_model.dart';
 import '../../data/models/doctor_availability_model.dart';
+import '../../data/models/doctor_consultation_model.dart';
 import '../../data/models/doctor_dashboard_model.dart';
 import '../../data/models/doctor_patient_model.dart';
+import '../../data/models/doctor_profile_model.dart';
 import '../../data/repositories/doctor_repository.dart';
 
 final doctorRepositoryProvider = Provider<DoctorRepository>((ref) {
@@ -245,6 +247,130 @@ class DoctorAvailabilityActionController extends AsyncNotifier<void> {
       () => ref.read(doctorRepositoryProvider).syncAvailabilityCalendar(),
     );
     state = result.whenData((_) {});
+    return result.hasValue ? result.value : null;
+  }
+}
+
+final doctorConsultationProvider =
+    FutureProvider.family<DoctorConsultationData, int>((ref, patientId) async {
+      final repository = ref.watch(doctorRepositoryProvider);
+      final results = await Future.wait<dynamic>([
+        repository.getConsultationHistory(patientId),
+        repository.getMedications(),
+        repository.getTreatmentTypes(),
+      ]);
+      return DoctorConsultationData(
+        history: results[0] as DoctorConsultationHistoryModel,
+        medications: results[1] as List<DoctorMedicationModel>,
+        treatmentTypes: results[2] as List<DoctorTreatmentTypeModel>,
+      );
+    });
+
+final doctorConsultationActionProvider =
+    AsyncNotifierProvider<DoctorConsultationActionController, void>(
+      DoctorConsultationActionController.new,
+    );
+
+class DoctorConsultationActionController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<DoctorDiagnosisModel?> createDiagnosis(
+    DoctorDiagnosisCreateRequest request,
+  ) async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).createDiagnosis(request),
+    );
+    state = result.whenData((_) {});
+    if (!result.hasError) _refreshPatient(request.appointmentId);
+    return result.hasValue ? result.value : null;
+  }
+
+  Future<DoctorTreatmentModel?> createTreatment(
+    DoctorTreatmentCreateRequest request, {
+    required int patientId,
+  }) async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).createTreatment(request),
+    );
+    state = result.whenData((_) {});
+    if (!result.hasError) {
+      ref.invalidate(doctorConsultationProvider(patientId));
+      ref.invalidate(doctorPatientFileProvider(patientId));
+    }
+    return result.hasValue ? result.value : null;
+  }
+
+  Future<bool> addMedication(
+    DoctorTreatmentMedicationRequest request, {
+    required int patientId,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).addTreatmentMedication(request),
+    );
+    if (!state.hasError) {
+      ref.invalidate(doctorConsultationProvider(patientId));
+      ref.invalidate(doctorPatientFileProvider(patientId));
+    }
+    return !state.hasError;
+  }
+
+  Future<DoctorSummaryModel?> createSummary(
+    DoctorSummaryCreateRequest request,
+  ) async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).createSummary(request),
+    );
+    state = result.whenData((_) {});
+    if (!result.hasError) {
+      ref.invalidate(doctorPatientFileProvider(request.patientId));
+    }
+    return result.hasValue ? result.value : null;
+  }
+
+  void _refreshPatient(int appointmentId) {
+    ref.invalidate(doctorAppointmentsProvider);
+    ref.invalidate(doctorHomeProvider);
+  }
+}
+
+final doctorProfileProvider = FutureProvider<DoctorProfileData>((ref) async {
+  final repository = ref.watch(doctorRepositoryProvider);
+  final results = await Future.wait<dynamic>([
+    repository.getProfile(),
+    repository.getProfileStats(),
+    repository.getProfileActivity(),
+  ]);
+  return DoctorProfileData(
+    profile: results[0] as DoctorProfileModel,
+    stats: results[1] as DoctorProfileStatsModel,
+    activity: results[2] as List<DoctorActivityModel>,
+  );
+});
+
+final doctorProfileActionProvider =
+    AsyncNotifierProvider<DoctorProfileActionController, void>(
+      DoctorProfileActionController.new,
+    );
+
+class DoctorProfileActionController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<DoctorProfileModel?> save(DoctorProfileUpdateRequest request) async {
+    state = const AsyncLoading();
+    final result = await AsyncValue.guard(
+      () => ref.read(doctorRepositoryProvider).updateProfile(request),
+    );
+    state = result.whenData((_) {});
+    if (!result.hasError) {
+      ref.invalidate(doctorProfileProvider);
+      ref.invalidate(doctorHomeProvider);
+    }
     return result.hasValue ? result.value : null;
   }
 }

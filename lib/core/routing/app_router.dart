@@ -12,11 +12,14 @@ import '../../features/doctor/data/models/doctor_appointment_model.dart';
 import '../../features/doctor/presentation/doctor_appointment_details_screen.dart';
 import '../../features/doctor/presentation/doctor_appointments_screen.dart';
 import '../../features/doctor/presentation/doctor_availability_screen.dart';
+import '../../features/doctor/presentation/doctor_consultation_screen.dart';
 import '../../features/doctor/presentation/doctor_home_screen.dart';
 import '../../features/doctor/presentation/doctor_more_screen.dart';
 import '../../features/doctor/presentation/doctor_patient_medical_file_screen.dart';
 import '../../features/doctor/presentation/doctor_patients_screen.dart';
 import '../../features/doctor/presentation/doctor_placeholder_screen.dart';
+import '../../features/doctor/presentation/doctor_profile_screen.dart'
+    as doctor_profile;
 import '../../features/doctor/presentation/doctor_shell.dart';
 import '../../features/patient/presentation/appointment_details_screen.dart';
 import '../../features/patient/presentation/book_appointment_screen.dart';
@@ -243,6 +246,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   );
                 },
               ),
+              GoRoute(
+                path: '/doctor/consultation/:appointmentId',
+                builder: (context, state) {
+                  final appointment = state.extra;
+                  if (appointment is DoctorAppointmentModel) {
+                    return DoctorConsultationScreen(appointment: appointment);
+                  }
+                  return const DoctorPlaceholderScreen(
+                    title: 'Consultation not loaded',
+                    message:
+                        'Open consultation from an appointment because the backend does not provide a direct doctor appointment details endpoint yet.',
+                    icon: Icons.medical_information_outlined,
+                  );
+                },
+              ),
             ],
           ),
           StatefulShellBranch(
@@ -285,12 +303,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: '/doctor/profile',
-                builder: (context, state) => const DoctorPlaceholderScreen(
-                  title: 'Profile',
-                  message:
-                      'Doctor profile editing will be implemented in a later sprint.',
-                  icon: Icons.person_outline,
-                ),
+                builder: (context, state) =>
+                    const doctor_profile.DoctorProfileScreen(),
               ),
             ],
           ),

@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_appointment_model.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_availability_model.dart';
+import 'package:salamtak_mobile/features/doctor/data/models/doctor_consultation_model.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_dashboard_model.dart';
 import 'package:salamtak_mobile/features/doctor/data/models/doctor_patient_model.dart';
+import 'package:salamtak_mobile/features/doctor/data/models/doctor_profile_model.dart';
 
 void main() {
   test('doctor dashboard parses PascalCase and snake_case defensively', () {
@@ -137,5 +139,61 @@ void main() {
     expect(stats.entries, 1);
     expect(sync.synced, isFalse);
     expect(sync.message, 'Not connected');
+  });
+
+  test('doctor consultation request and lookup models use backend casing', () {
+    final diagnosis = const DoctorDiagnosisCreateRequest(
+      appointmentId: 6,
+      notes: 'Follow up',
+    );
+    final treatment = const DoctorTreatmentCreateRequest(
+      diagnosisId: 9,
+      treatmentTypeId: 2,
+      startDate: '2026-06-26',
+      result: 'Improving',
+    );
+    final medication = DoctorMedicationModel.fromJson({
+      'MedicationID': '3',
+      'Name': 'Med',
+      'Dosage': '10mg',
+    });
+    final type = DoctorTreatmentTypeModel.fromJson({
+      'TreatmentTypeID': 2,
+      'Name': 'Physical therapy',
+    });
+
+    expect(diagnosis.toJson(), {'AppointmentID': 6, 'Notes': 'Follow up'});
+    expect(treatment.toJson()['DiagnosisID'], 9);
+    expect(treatment.toJson()['TreatmentTypeID'], 2);
+    expect(medication.id, 3);
+    expect(type.name, 'Physical therapy');
+  });
+
+  test('doctor profile parses and serializes editable fields', () {
+    final profile = DoctorProfileModel.fromJson({
+      'DoctorID': 2,
+      'FullName': 'hazem swilem',
+      'Specialization': 'Cardiology',
+      'YearsOfExperience': '5',
+      'AverageRating': '4.5',
+      'ReviewsCount': 7,
+    });
+    final update = DoctorProfileUpdateRequest(
+      fullName: 'hazem swilem',
+      specialization: 'Cardiology',
+      phone: '0100',
+      yearsOfExperience: 5,
+      hospitalId: 1,
+      bio: 'Bio',
+      achievements: 'Awards',
+      languages: 'Arabic, English',
+      clinicName: 'Clinic',
+    );
+
+    expect(profile.id, 2);
+    expect(profile.yearsOfExperience, 5);
+    expect(profile.averageRating, 4.5);
+    expect(update.toJson()['FullName'], 'hazem swilem');
+    expect(update.toJson()['HospitalID'], 1);
   });
 }
