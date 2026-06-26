@@ -58,4 +58,29 @@ class ApiConstants {
   static const String doctorStats = '/doctors/me/stats';
   static const String doctorTodaySummary = '/doctors/me/today-summary';
   static const String doctorActivityLog = '/doctors/me/activity-log';
+  static const String doctorAppointments = '/doctors/me/appointments';
+  static const String doctorTodayAppointments =
+      '/doctors/me/appointments/today';
+  static const String doctorUpcomingAppointments =
+      '/doctors/me/appointments/upcoming';
+  static const String doctorPastAppointments = '/doctors/me/appointments/past';
+  static const String doctorSearchAppointments =
+      '/doctors/me/appointments/search';
+  static const String doctorPatients = '/doctors/me/patients';
+  static const String doctorSearchPatients = '/doctors/patients/search';
+
+  static String doctorAppointmentStatus(int appointmentId) =>
+      '/doctors/me/appointments/$appointmentId/status';
+
+  static String doctorCancelAppointment(int appointmentId) =>
+      '/doctors/me/appointments/$appointmentId/cancel';
+
+  static String doctorPatientSummary(int patientId) =>
+      '/doctors/patients/$patientId/summary';
+
+  static String doctorPatientStatistics(int patientId) =>
+      '/doctors/patients/$patientId/statistics';
+
+  static String doctorConsultationHistory(int patientId) =>
+      '/doctors/consultations/history/$patientId';
 }

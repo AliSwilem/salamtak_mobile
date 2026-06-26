@@ -8,8 +8,13 @@ import '../../features/auth/presentation/patient_register_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/register_role_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/doctor/data/models/doctor_appointment_model.dart';
+import '../../features/doctor/presentation/doctor_appointment_details_screen.dart';
+import '../../features/doctor/presentation/doctor_appointments_screen.dart';
 import '../../features/doctor/presentation/doctor_home_screen.dart';
 import '../../features/doctor/presentation/doctor_more_screen.dart';
+import '../../features/doctor/presentation/doctor_patient_medical_file_screen.dart';
+import '../../features/doctor/presentation/doctor_patients_screen.dart';
 import '../../features/doctor/presentation/doctor_placeholder_screen.dart';
 import '../../features/doctor/presentation/doctor_shell.dart';
 import '../../features/patient/presentation/appointment_details_screen.dart';
@@ -218,12 +223,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/doctor/appointments',
-                builder: (context, state) => const DoctorPlaceholderScreen(
-                  title: 'Appointments',
-                  message:
-                      'Doctor appointment management will be implemented in a later sprint.',
-                  icon: Icons.calendar_month_outlined,
-                ),
+                builder: (context, state) => const DoctorAppointmentsScreen(),
+              ),
+              GoRoute(
+                path: '/doctor/appointments/:appointmentId',
+                builder: (context, state) {
+                  final appointment = state.extra;
+                  if (appointment is DoctorAppointmentModel) {
+                    return DoctorAppointmentDetailsScreen(
+                      appointment: appointment,
+                    );
+                  }
+                  return const DoctorPlaceholderScreen(
+                    title: 'Appointment not loaded',
+                    message:
+                        'Open appointment details from the appointments list because the backend does not provide a direct doctor details endpoint yet.',
+                    icon: Icons.event_busy_outlined,
+                  );
+                },
               ),
             ],
           ),
@@ -231,12 +248,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/doctor/patients',
-                builder: (context, state) => const DoctorPlaceholderScreen(
-                  title: 'Patients',
-                  message:
-                      'Doctor patient management will be implemented in a later sprint.',
-                  icon: Icons.groups_outlined,
-                ),
+                builder: (context, state) => const DoctorPatientsScreen(),
+              ),
+              GoRoute(
+                path: '/doctor/patients/:patientId',
+                builder: (context, state) {
+                  final patientId = int.tryParse(
+                    state.pathParameters['patientId'] ?? '',
+                  );
+                  if (patientId == null) {
+                    return const DoctorPlaceholderScreen(
+                      title: 'Patient not found',
+                      message: 'The patient id is invalid.',
+                      icon: Icons.error_outline,
+                    );
+                  }
+                  return DoctorPatientMedicalFileScreen(patientId: patientId);
+                },
               ),
             ],
           ),
