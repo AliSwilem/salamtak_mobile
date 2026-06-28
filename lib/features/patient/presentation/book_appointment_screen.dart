@@ -434,6 +434,14 @@ class _PickTimeStep extends ConsumerWidget {
                   DateTime.tryParse(selectedDate ?? '') ?? DateTime.now(),
             );
             if (date != null) onDateChanged(_yyyyMmDd(date));
+            if (date != null) {
+              ref.invalidate(
+                doctorAvailabilityProvider((
+                  doctorId: doctor!.id,
+                  date: _yyyyMmDd(date),
+                )),
+              );
+            }
           },
           icon: const Icon(Icons.calendar_today_outlined),
           label: Text(selectedDate ?? 'Select date'),
@@ -451,23 +459,40 @@ class _PickTimeStep extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => const Text('Failed to load availability.'),
                 data: (slots) {
-                  if (slots.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Text('No available slots for this date.'),
+                  final availableSlots = slots
+                      .where((slot) => slot.available && slot.time.isNotEmpty)
+                      .toList();
+                  if (availableSlots.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('No available slots for this date.'),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: () => ref.invalidate(
+                              doctorAvailabilityProvider((
+                                doctorId: doctor!.id,
+                                date: selectedDate!,
+                              )),
+                            ),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Refresh availability'),
+                          ),
+                        ],
+                      ),
                     );
                   }
                   return Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: slots.map((slot) {
+                    children: availableSlots.map((slot) {
                       final selected = selectedSlot?.time == slot.time;
                       return ChoiceChip(
                         label: Text(slot.displayTime),
                         selected: selected,
-                        onSelected: slot.available
-                            ? (_) => onSlotSelected(slot)
-                            : null,
+                        onSelected: (_) => onSlotSelected(slot),
                       );
                     }).toList(),
                   );

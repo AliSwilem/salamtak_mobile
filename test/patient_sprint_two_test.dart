@@ -42,6 +42,18 @@ void main() {
     expect(slot.available, isTrue);
   });
 
+  test('availability slot respects backend unavailable state', () {
+    final slot = PatientAvailabilitySlotModel.fromJson({
+      'Date': '2026-07-01',
+      'Time': '10:30:00',
+      'Status': 'Booked',
+      'Available': false,
+    });
+
+    expect(slot.time, '10:30:00');
+    expect(slot.available, isFalse);
+  });
+
   test('doctor profile parses recent reviews and achievements', () {
     final profile = PatientDoctorProfileModel.fromJson({
       'DoctorID': 4,

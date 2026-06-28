@@ -132,7 +132,15 @@ class AppointmentActionController extends AsyncNotifier<void> {
     );
     state = result.whenData((_) {});
     final appointment = result.hasValue ? result.value : null;
-    if (appointment != null) _refreshAppointments();
+    if (appointment != null) {
+      _refreshAppointments();
+      ref.invalidate(
+        doctorAvailabilityProvider((
+          doctorId: request.doctorId,
+          date: request.date,
+        )),
+      );
+    }
     return appointment;
   }
 

@@ -108,4 +108,30 @@ class ApiConstants {
   static const String doctorProfileMe = '/doctors/me/profile';
   static const String doctorProfileStats = '/doctors/me/profile/stats';
   static const String doctorProfileActivity = '/doctors/me/profile/activity';
+
+  static const String chatConversations = '/chat/conversations';
+  static const String chatStart = '/chat/start';
+  static const String chatSearchDoctors = '/chat/search/doctors';
+  static const String chatSearchPatients = '/chat/search/patients';
+
+  static String chatMessages(int conversationId) =>
+      '/chat/conversations/$conversationId/messages';
+
+  static String chatMarkRead(int messageId) =>
+      '/chat/messages/$messageId/mark-read';
+
+  static String videoSessionForAppointment(int appointmentId) =>
+      '/video-sessions/appointments/$appointmentId';
+
+  static String startVideoSession(int appointmentId) =>
+      '/video-sessions/appointments/$appointmentId/start';
+
+  static String joinVideoSession(int appointmentId) =>
+      '/video-sessions/appointments/$appointmentId/join';
+
+  static String leaveVideoSession(int sessionId) =>
+      '/video-sessions/$sessionId/leave';
+
+  static String endVideoSession(int sessionId) =>
+      '/video-sessions/$sessionId/end';
 }

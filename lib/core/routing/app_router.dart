@@ -8,6 +8,9 @@ import '../../features/auth/presentation/patient_register_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/register_role_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/chat/data/models/chat_models.dart';
+import '../../features/chat/presentation/chat_conversations_screen.dart';
+import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/doctor/data/models/doctor_appointment_model.dart';
 import '../../features/doctor/presentation/doctor_appointment_details_screen.dart';
 import '../../features/doctor/presentation/doctor_appointments_screen.dart';
@@ -35,6 +38,7 @@ import '../../features/patient/presentation/patient_profile_screen.dart';
 import '../../features/patient/presentation/patient_records_screen.dart';
 import '../../features/patient/presentation/patient_shell.dart';
 import '../../features/patient/presentation/patient_test_results_screen.dart';
+import '../../features/video/presentation/video_session_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RouterRefreshNotifier();
@@ -74,11 +78,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (authState.role == 'doctor') {
-        return location.startsWith('/doctor') ? null : '/doctor';
+        return location.startsWith('/doctor') || location.startsWith('/chat')
+            ? null
+            : '/doctor';
       }
 
       if (authState.role == 'patient') {
-        return location.startsWith('/patient') ? null : '/patient';
+        return location.startsWith('/patient') || location.startsWith('/chat')
+            ? null
+            : '/patient';
       }
 
       return '/login';
@@ -104,6 +112,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register/doctor',
         builder: (context, state) => const DoctorRegisterScreen(),
+      ),
+      GoRoute(
+        path: '/chat',
+        builder: (context, state) => const ChatConversationsScreen(),
+      ),
+      GoRoute(
+        path: '/chat/:conversationId',
+        builder: (context, state) {
+          final conversationId = int.tryParse(
+            state.pathParameters['conversationId'] ?? '',
+          );
+          if (conversationId == null) {
+            return const _InvalidChatScreen();
+          }
+          final conversation = state.extra is ChatConversationModel
+              ? state.extra as ChatConversationModel
+              : null;
+          return ChatScreen(
+            conversationId: conversationId,
+            conversation: conversation,
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -141,6 +171,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     );
                   }
                   return AppointmentDetailsScreen(appointmentId: appointmentId);
+                },
+              ),
+              GoRoute(
+                path: '/patient/appointments/:appointmentId/video',
+                builder: (context, state) {
+                  final appointmentId = int.tryParse(
+                    state.pathParameters['appointmentId'] ?? '',
+                  );
+                  if (appointmentId == null) {
+                    return const PatientPlaceholderScreen(
+                      title: 'Video session not found',
+                      message: 'The appointment id is invalid.',
+                      icon: Icons.error_outline,
+                    );
+                  }
+                  return VideoSessionScreen(appointmentId: appointmentId);
                 },
               ),
             ],
@@ -247,6 +293,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 },
               ),
               GoRoute(
+                path: '/doctor/appointments/:appointmentId/video',
+                builder: (context, state) {
+                  final appointmentId = int.tryParse(
+                    state.pathParameters['appointmentId'] ?? '',
+                  );
+                  if (appointmentId == null) {
+                    return const DoctorPlaceholderScreen(
+                      title: 'Video session not found',
+                      message: 'The appointment id is invalid.',
+                      icon: Icons.error_outline,
+                    );
+                  }
+                  return VideoSessionScreen(appointmentId: appointmentId);
+                },
+              ),
+              GoRoute(
                 path: '/doctor/consultation/:appointmentId',
                 builder: (context, state) {
                   final appointment = state.extra;
@@ -319,6 +381,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   void refresh() => notifyListeners();
+}
+
+class _InvalidChatScreen extends StatelessWidget {
+  const _InvalidChatScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Chat')),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('The conversation id is invalid.'),
+        ),
+      ),
+    );
+  }
 }
 
 ({String title, String message, IconData icon}) _comingSoonConfig(

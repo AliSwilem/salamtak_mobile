@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/models/doctor_appointment_model.dart';
+import '../../video/presentation/providers/video_providers.dart';
 import 'providers/doctor_providers.dart';
 
 class DoctorAppointmentDetailsScreen extends ConsumerStatefulWidget {
@@ -39,6 +40,8 @@ class _DoctorAppointmentDetailsScreenState
           const SizedBox(height: 16),
           _DetailsCard(appointment: _appointment),
           const SizedBox(height: 16),
+          _VideoStatusCard(appointment: _appointment),
+          const SizedBox(height: 16),
           Text('Actions', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           if (_appointment.patientId > 0) ...[
@@ -59,6 +62,16 @@ class _DoctorAppointmentDetailsScreenState
                   ),
             icon: const Icon(Icons.medical_information_outlined),
             label: const Text('Start / open consultation'),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: _appointment.patientId <= 0
+                ? null
+                : () => context.push(
+                    '/doctor/appointments/${_appointment.id}/video',
+                  ),
+            icon: const Icon(Icons.video_call_outlined),
+            label: const Text('Open video session'),
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
@@ -278,6 +291,112 @@ class _DetailsCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _VideoStatusCard extends ConsumerWidget {
+  final DoctorAppointmentModel appointment;
+
+  const _VideoStatusCard({required this.appointment});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(videoSessionProvider(appointment.id));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: session.when(
+          loading: () => const Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('Checking video session...'),
+            ],
+          ),
+          error: (_, _) => _VideoSummary(
+            title: 'Video unavailable',
+            message: 'Video status could not be loaded.',
+            buttonLabel: 'Open video',
+            onPressed: () =>
+                context.push('/doctor/appointments/${appointment.id}/video'),
+          ),
+          data: (item) {
+            if (item == null) {
+              return _VideoSummary(
+                title: 'Video consultation',
+                message: 'No video session has been started yet.',
+                buttonLabel: 'Start / open video',
+                onPressed: () => context.push(
+                  '/doctor/appointments/${appointment.id}/video',
+                ),
+              );
+            }
+
+            return _VideoSummary(
+              title: 'Video ${item.displayStatus}',
+              message: item.canJoin
+                  ? 'This video session is ready to join.'
+                  : item.noticeMessage ??
+                        'Video session exists, but joining is not available.',
+              buttonLabel: item.canJoin ? 'Join video' : 'View video status',
+              onPressed: () =>
+                  context.push('/doctor/appointments/${appointment.id}/video'),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoSummary extends StatelessWidget {
+  final String title;
+  final String message;
+  final String buttonLabel;
+  final VoidCallback onPressed;
+
+  const _VideoSummary({
+    required this.title,
+    required this.message,
+    required this.buttonLabel,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.videocam_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(message),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.video_call_outlined),
+          label: Text(buttonLabel),
+        ),
+      ],
     );
   }
 }

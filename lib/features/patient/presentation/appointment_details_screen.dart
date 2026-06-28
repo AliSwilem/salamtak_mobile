@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/models/patient_appointment_model.dart';
 import '../data/models/patient_availability_slot_model.dart';
+import '../../video/presentation/providers/video_providers.dart';
 import 'patient_appointments_screen.dart';
 import 'providers/patient_providers.dart';
 
@@ -39,11 +40,119 @@ class AppointmentDetailsScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               _PaymentCard(appointment: item),
               const SizedBox(height: 12),
+              _VideoStatusCard(appointment: item),
+              const SizedBox(height: 12),
               _ActionCard(appointment: item),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _VideoStatusCard extends ConsumerWidget {
+  final PatientAppointmentModel appointment;
+
+  const _VideoStatusCard({required this.appointment});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(videoSessionProvider(appointment.id));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: session.when(
+          loading: () => const Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('Checking video session...'),
+            ],
+          ),
+          error: (_, _) => _VideoSummary(
+            title: 'Video unavailable',
+            message: 'Video status could not be loaded.',
+            buttonLabel: 'Open video',
+            onPressed: () =>
+                context.push('/patient/appointments/${appointment.id}/video'),
+          ),
+          data: (item) {
+            if (item == null) {
+              return _VideoSummary(
+                title: 'Video consultation',
+                message: 'The doctor has not started a video session yet.',
+                buttonLabel: 'Open waiting room',
+                onPressed: () => context.push(
+                  '/patient/appointments/${appointment.id}/video',
+                ),
+              );
+            }
+
+            return _VideoSummary(
+              title: 'Video ${item.displayStatus}',
+              message: item.canJoin
+                  ? 'You can join this video consultation.'
+                  : item.noticeMessage ??
+                        'Video session exists, but joining is not available yet.',
+              buttonLabel: item.canJoin ? 'Join video' : 'View video status',
+              onPressed: () =>
+                  context.push('/patient/appointments/${appointment.id}/video'),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoSummary extends StatelessWidget {
+  final String title;
+  final String message;
+  final String buttonLabel;
+  final VoidCallback onPressed;
+
+  const _VideoSummary({
+    required this.title,
+    required this.message,
+    required this.buttonLabel,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.videocam_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(message),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: onPressed,
+          icon: const Icon(Icons.video_call_outlined),
+          label: Text(buttonLabel),
+        ),
+      ],
     );
   }
 }
